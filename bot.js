@@ -6,10 +6,20 @@ require('dotenv').config();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const GAS_URL = process.env.GAS_WEBAPP_URL;
 
+// Define a function that returns the unique User ID regardless of chat type
+const getSessionKey = (ctx) => {
+    if (ctx.from && ctx.chat) {
+        // Return a key based only on the user's ID
+        return String(ctx.from.id);
+    }
+    return null; // Don't process updates without a user
+};
+
 // Session middleware
 bot.use(
     new LocalSession({ 
-        database: 'sessions.json' // Where data is stored (for Render, this is temporary storage)
+        database: 'sessions.json',
+        getSessionKey: getSessionKey // <--- THIS IS THE KEY FIX
     }).middleware()
 );
 
