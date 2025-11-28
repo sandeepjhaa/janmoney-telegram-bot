@@ -44,3 +44,35 @@ bot.on('text', async (ctx) => {
         await ctx.reply("I only recognize the /start command or your 5-digit Party Code. Please try again.");
     }
 });
+// --- CRITICAL WEBHOOK LISTENING CODE ---
+
+// Render provides the PORT as an environment variable (e.g., 10000)
+// The host must listen on 0.0.0.0 to accept external connections
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
+
+// 1. Get the domain name from the environment variable you saved
+const RENDER_DOMAIN = 'janmoney-telegram-bot.onrender.com';
+
+// 2. Set the Webhook externally (as you've already done)
+//    Now, start the web server listening for those pings.
+
+bot.launch({
+    // Optional: Use the Express server built into Telegraf to handle the HTTP requests
+    webhook: {
+        // We only provide the hostname, Telegraf handles the HTTPS part
+        domain: RENDER_DOMAIN, 
+        // We tell Telegraf to listen on the specific port assigned by Render
+        port: PORT,
+        host: HOST
+    }
+})
+.then(() => {
+    // This log should now appear in your Render console upon successful deployment
+    console.log(`🚀 JanMoney Bot Webhook Listener Started on port ${PORT}`);
+})
+.catch(err => {
+    console.error('FATAL ERROR during Telegraf Webhook launch:', err);
+});
+
+// IMPORTANT: Delete any previous bot.launch() or bot.startPolling() lines!
