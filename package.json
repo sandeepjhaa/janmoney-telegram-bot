@@ -16,5 +16,5 @@
     "node-cron": "^4.2.1",
     "telegraf": "^4.16.3",
     "telegraf-session-local": "^2.1.0",
-  },
+  }
 }
