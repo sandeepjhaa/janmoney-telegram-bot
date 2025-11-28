@@ -21,7 +21,24 @@ bot.on('text', async (ctx) => {
         await ctx.reply(`❌ ${partyData.error}\n\nPlease try again with correct party code.`);
         return;
       }
-      
+//added code at 04:07 at 29-11-25
+      catch (error) {
+    // CRITICAL DEBUGGING LINE:
+    console.error('AXIOS API CALL FAILED. Details:', error.message);
+    
+    // Check if the error is a network error or a bad HTTP response
+    if (error.response) {
+        console.error('GAS Status Code:', error.response.status);
+        // This is the response from the GAS server itself (e.g., 500)
+        console.error('GAS Error Data:', error.response.data); 
+    } else {
+        // This is a network error (like a DNS issue or timeout)
+        console.error('Network/Timeout Error:', error.code);
+    }
+    
+    // ... handle failure ...
+    return { error: true, message: 'Internal Server Error during validation.' };
+}
       // Successful login
       ctx.session.partyCode = partyCode;
       ctx.session.partyName = partyData.PartyName;
