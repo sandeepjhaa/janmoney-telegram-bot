@@ -1,4 +1,5 @@
 const { Telegraf, Markup, session } = require('telegraf');
+const LocalSession = require('telegraf-session-local');
 const axios = require('axios');
 require('dotenv').config();
 
@@ -6,7 +7,11 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const GAS_URL = process.env.GAS_WEBAPP_URL;
 
 // Session middleware
-bot.use(session());
+bot.use(
+    new LocalSession({ 
+        database: 'sessions.json' // Where data is stored (for Render, this is temporary storage)
+    }).middleware()
+);
 
 // Start command
 bot.start(async (ctx) => {
