@@ -14,7 +14,7 @@ bot.start(async (ctx) => {
     `🏦 *National Bank of Bharat* 🇮🇳\n\n` +
     `Welcome to Project Pradhanmantri Banking System!\n\n` +
     `Please login with your 5-digit party code from the Confidential File:\n` +
-    `Example: \\`BJP01\\``,
+    `Example: \`BJP01\``,
     { parse_mode: 'Markdown' }
   );
 });
