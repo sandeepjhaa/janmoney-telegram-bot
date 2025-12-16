@@ -15,6 +15,11 @@ bot.on('text', async (ctx) => {
     }
 
     await ctx.reply(`Code received: ${partyCode}. Running database check...`);
+    // Add this code
+    console.log("1. TRACER: Preparing to call API...");
+    console.log("2. TRACER: URL is:", process.env.GAS_WEBAPP_URL); // Reveal the secret!
+    console.log("3. TRACER: Payload is:", { partyCode, telegramId: ctx.from.id });
+    // ---------------------
 
     try {
       // 2. Call Google Apps Script
