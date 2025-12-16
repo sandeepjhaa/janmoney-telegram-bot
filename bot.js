@@ -6,6 +6,13 @@ require('dotenv').config();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const GAS_URL = process.env.GAS_WEBAPP_URL;
 
+// Define the Main Menu Buttons
+const MainMenuKeyboard = Markup.keyboard([
+    ['💰 Check Balance', '💸 Transfer Money'],
+    ['📊 Leaderboard', '📜 Transaction History'],
+    ['📞 Contact Admin', '🚪 Logout']
+]).resize(); // .resize() makes the buttons fit nicely on mobile
+
 // Define a function that returns the unique User ID regardless of chat type
 const getSessionKey = (ctx) => {
     if (ctx.from && ctx.chat) {
@@ -93,7 +100,10 @@ bot.on('text', async (ctx) => {
             `💰 *Current Balance:*\n` +
             `💵 Legal Money: ₹${partyData.LegalBalance} Crore\n` +
             `⚫ Black Money: ₹${partyData.BlackBalance} Crore\n`,
-            { parse_mode: 'Markdown' }
+            { 
+                parse_mode: 'Markdown',
+                ...MainMenuKeyboard // <--- THIS ADDS THE BUTTONS!
+            }
         );
 
     } catch (error) {
@@ -105,6 +115,54 @@ bot.on('text', async (ctx) => {
         }
         await ctx.reply('🔧 Connection Failed. Check Render Logs for [TRACER] details.');
     }
+});
+
+// --- COMMAND HANDLERS ---
+
+// 1. Balance Check Handler
+bot.hears(['💰 Check Balance', '/balance'], async (ctx) => {
+    // Security Check: Is user logged in?
+    if (!ctx.session.isLoggedIn) {
+        return ctx.reply("🔒 Please login with your Party Code first.");
+    }
+
+    await ctx.reply("🔄 Fetching latest balance from Bank Server...");
+
+    try {
+        // Re-fetch data from Google Sheet to ensure it's up-to-date
+        const response = await axios.post(process.env.GAS_WEBAPP_URL, {
+            action: 'getParty', // We need to ensure GAS has this case!
+            partyCode: ctx.session.partyCode
+        });
+
+        const data = response.data;
+        
+        if (data.error) {
+            return ctx.reply(`❌ Error: ${data.error}`);
+        }
+
+        // Update Session
+        ctx.session.legalBalance = data.LegalBalance;
+        ctx.session.blackBalance = data.BlackBalance;
+
+        await ctx.reply(
+            `💰 *LATEST BALANCE:*\n\n` +
+            `💵 Legal: ₹${data.LegalBalance} Cr\n` +
+            `⚫ Black: ₹${data.BlackBalance} Cr`,
+            { parse_mode: 'Markdown' }
+        );
+
+    } catch (error) {
+        console.error("Balance Check Failed:", error.message);
+        ctx.reply("⚠️ Network Error. showing last known balance:\n" + 
+                  `Legal: ₹${ctx.session.legalBalance} Cr | Black: ₹${ctx.session.blackBalance} Cr`);
+    }
+});
+
+// 2. Logout Handler
+bot.hears(['🚪 Logout', '/logout'], async (ctx) => {
+    ctx.session = null; // Clear session
+    await ctx.reply("🔒 Logged out successfully. Enter your Party Code to login again.", Markup.removeKeyboard());
 });
 
 // --- WEBHOOK SERVER SETUP ---
